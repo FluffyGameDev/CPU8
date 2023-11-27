@@ -1,17 +1,38 @@
-﻿#include <chrono>
-#include <iostream>
-#include <thread>
-#include <Windows.h>
+﻿#include <iostream>
+#include <sstream>
 
-#include "core/types.h"
 #include "core/cpu.h"
 #include "core/characterdisplay.h"
 #include "core/memoryunit.h"
+#include "compiler/registerbasedcompiler.h"
+
+/*
+    char dstAddr = VIDEO_START;
+    char c = 'A';
+    while (dstAddr < VIDEO_START + 26)
+    {
+        *dstAddr = c;
+        ++dstAddr;
+        ++c;
+    }
+*/
+const char* k_Program
+{
+    "MOV A 'A'\n"
+    "MOV B VIDEO_START\n"
+    "MOV C VIDEO_START\n"
+    "ADD C 26\n"
+    "loopStart:\n"
+    "MOV[B] A\n"
+    "INC A\n"
+    "INC B\n"
+    "CMP B C\n"
+    "JG loopStart\n"
+};
 
 int main()
 {
     using namespace FluffyGamevev::CPU8;
-    using namespace std::chrono_literals;
 
     CPU cpu{};
     MemoryUnit ram{};
@@ -19,37 +40,19 @@ int main()
     CharacterDisplay display{};
     u8 programSize{};
 
-    //TODO: compile program
-    /*
-        char dstAddr = VIDEO_START;
-        char c = 'A';
-        while (dstAddr < VIDEO_START + 26)
-        {
-            *dstAddr = c;
-            ++dstAddr;
-            ++c;
-        }
-    */
-
-    /*
-        MOV A 'A'
-        MOV B VIDEO_START
-        MOV C VIDEO_START
-        ADD C 26
-
-    loopStart:
-        MOV [B] A
-        INC A
-        INC B
-
-        CMP B C
-        JG loopStart
-    */
-
-    while (cpu.InstructionPointer < programSize)
+    std::istringstream ss{ k_Program };
+    if (RegisterBasedCompiler::CompileProgram(ss, rom, programSize))
     {
-        cpu.RunNextInstruction(rom, ram);
-        display.RenderDisplay(ram);
+        while (cpu.InstructionPointer < programSize)
+        {
+            cpu.RunNextInstruction(rom, ram);
+            display.RenderDisplay(ram);
+        }
+    }
+    else
+    {
+        std::cout << "Failed to compile Program.\n";
+        //TODO: print error details
     }
 
     return 0;
