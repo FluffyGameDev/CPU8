@@ -18,12 +18,14 @@
 */
 const char* k_Program
 {
-    "MOV A 'A'\n"
+    "CONST CHAR_A 65\n"
+    "CONST VIDEO_START 191\n"
+    "MOV A CHAR_A\n"
     "MOV B VIDEO_START\n"
     "MOV C VIDEO_START\n"
     "ADD C 26\n"
     "loopStart:\n"
-    "MOV[B] A\n"
+    "MOV [B] A\n"
     "INC A\n"
     "INC B\n"
     "CMP B C\n"
@@ -41,7 +43,8 @@ int main()
     u8 programSize{};
 
     std::istringstream ss{ k_Program };
-    if (RegisterBasedCompiler::CompileProgram(ss, rom, programSize))
+    RegisterBasedCompiler compiler{};
+    if (compiler.CompileProgram(ss, rom, programSize))
     {
         while (cpu.InstructionPointer < programSize)
         {

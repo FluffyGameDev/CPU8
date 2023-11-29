@@ -4,47 +4,47 @@
 
 namespace FluffyGamevev::CPU8
 {
-    // +---+---+---+---+---+---+---+---+---------------+
-    // | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 | Extra Byte    |
-    // +---+---+---+---+---+---+---+---+---------------+
-    // | 00 : Mov      |  dst  |  src  |               |
-    // | 01 : Mov []   |  dst  |  src  |               |
-    // | 02 : Add      |  lhs  |  rhs  |               |
-    // | 03 : Sub      |  lhs  |  rhs  |               |
-    // | 04 : Mul      |  lhs  |  rhs  |               |
-    // | 05 : Div      |  lhs  |  rhs  |               |
-    // | 06 : Mod      |  lhs  |  rhs  |               |
-    // | 07 : And      |  lhs  |  rhs  |               |
-    // | 08 : Or       |  lhs  |  rhs  |               |
-    // | 09 : Xor      |  lhs  |  rhs  |               |
-    // | 10 : Cmp      |  lhs  |  rhs  |               |
-    // | 11 : Unary Op | 0 Add |  dst  | rhs           |
-    // | 11 : Unary Op | 1 Sub |  dst  | rhs           |
-    // | 11 : Unary Op | 2 Mul |  dst  | rhs           |
-    // | 11 : Unary Op | 3 Div |  dst  | rhs           |
-    // | 12 : Unary Op | 0 Mod |  dst  | rhs           |
-    // | 12 : Unary Op | 1 And |  dst  | rhs           |
-    // | 12 : Unary Op | 2 Or  |  dst  | rhs           |
-    // | 12 : Unary Op | 3 Xor |  dst  | rhs           |
-    // | 13 : Unary Op | 0 Not |  dst  |               |
-    // | 13 : Unary Op | 1 Inc |  dst  |               |
-    // | 13 : Unary Op | 2 Dec |  dst  |               |
-    // | 13 : Unary Op | 3 Mov |  dst  | value         |
-    // | 14 : Unary Op | 0Mov[]|  dst  | value         |
-    // | 14 : Unary Op | 1 Push|  src  |               |
-    // | 14 : Unary Op | 2 Pop |  dst  |               |
-    // | 14 : Unary Op | 3 Load|  dst  | addr          |
-    // | 15 : Unary Op | 0 Cmp |  lhs  | value         |
-    // | 15 : Unary Op | 1 ??? |  dst  |               |
-    // | 15 : No Args  | 2     | 0 Nop |               |
-    // | 15 : No Args  | 2     | 1 Dat | value         |
-    // | 15 : No Args  | 2     | 2 Jmp | dst           |
-    // | 15 : No Args  | 2     | 3 Je  | dst           |
-    // | 15 : No Args  | 3     | 0 Jg  | dst           |
-    // | 15 : No Args  | 3     | 1 Jl  | dst           |
-    // | 15 : No Args  | 3     | 2 ??? |               |
-    // | 15 : No Args  | 3     | 3 ??? |               |
-    // +---------------+-------+-------+---------------+
+    // +---+---+---+---+---+---+---+---+---------------+---------------+
+    // | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 | Extra Byte    | Interpreter   |
+    // +---+---+---+---+---+---+---+---+---------------+---------------+
+    // | 00 : Mov      |  dst  |  src  |               | Mov           |
+    // | 01 : Mov []   |  dst  |  src  |               | Mov           |
+    // | 02 : Add      |  lhs  |  rhs  |               | BinaryOp      |
+    // | 03 : Sub      |  lhs  |  rhs  |               | BinaryOp      |
+    // | 04 : Mul      |  lhs  |  rhs  |               | BinaryOp      |
+    // | 05 : Div      |  lhs  |  rhs  |               | BinaryOp      |
+    // | 06 : Mod      |  lhs  |  rhs  |               | BinaryOp      |
+    // | 07 : And      |  lhs  |  rhs  |               | BinaryOp      |
+    // | 08 : Or       |  lhs  |  rhs  |               | BinaryOp      |
+    // | 09 : Xor      |  lhs  |  rhs  |               | BinaryOp      |
+    // | 10 : Cmp      |  lhs  |  rhs  |               | BinaryOp      |
+    // | 11 : Unary Op | 0 Add |  rhs  | rhs           | BinaryOp      |
+    // | 11 : Unary Op | 1 Sub |  rhs  | rhs           | BinaryOp      |
+    // | 11 : Unary Op | 2 Mul |  rhs  | rhs           | BinaryOp      |
+    // | 11 : Unary Op | 3 Div |  rhs  | rhs           | BinaryOp      |
+    // | 12 : Unary Op | 0 Mod |  rhs  | rhs           | BinaryOp      |
+    // | 12 : Unary Op | 1 And |  rhs  | rhs           | BinaryOp      |
+    // | 12 : Unary Op | 2 Or  |  rhs  | rhs           | BinaryOp      |
+    // | 12 : Unary Op | 3 Xor |  rhs  | rhs           | BinaryOp      |
+    // | 13 : Unary Op | 0 Not |  dst  |               | UnraryOp      |
+    // | 13 : Unary Op | 1 Inc |  dst  |               | UnraryOp      |
+    // | 13 : Unary Op | 2 Dec |  dst  |               | UnraryOp      |
+    // | 13 : Unary Op | 3 Mov |  dst  | value         | Mov           |
+    // | 14 : Unary Op | 0Mov[]|  dst  | value         | Mov           |
+    // | 14 : Unary Op | 1 Push|  src  |               | UnraryOp      |
+    // | 14 : Unary Op | 2 Pop |  dst  |               | UnraryOp      |
+    // | 14 : Unary Op | 3 Load|  dst  | addr          | BinaryOp      |
+    // | 15 : Unary Op | 0 Cmp |  lhs  | rhs           | BinaryOp      |
+    // | 15 : Unary Op | 1 ??? |       |               |               |
+    // | 15 : No Args  | 2     | 0 Nop |               | No Arg        |
+    // | 15 : No Args  | 2     | 1 Dat | value         | UnraryOp      |
+    // | 15 : No Args  | 2     | 2 Jmp | dst           | UnraryOp      |
+    // | 15 : No Args  | 2     | 3 Je  | dst           | UnraryOp      |
+    // | 15 : No Args  | 3     | 0 Jg  | dst           | UnraryOp      |
+    // | 15 : No Args  | 3     | 1 Jl  | dst           | UnraryOp      |
+    // | 15 : No Args  | 3     | 2 ??? |               |               |
+    // | 15 : No Args  | 3     | 3 ??? |               |               |
+    // +---------------+-------+-------+---------------+---------------+
 
     enum class Register
     {
