@@ -5,8 +5,7 @@ add_executable (CPU8 "CPU8.cpp"
                      "core/cpu.cpp"
                      "core/memoryunit.cpp"
                      "core/registerbasedcpu.cpp"
-                     "compiler/registerbasedcompiler.cpp"
-                     "compiler/parserutils.cpp"
-                     "compiler/opparser/noargparser.cpp")
+                     "compiler/codegenerator.cpp"
+                     "compiler/lexer.cpp")
 
 target_compile_features(CPU8 PRIVATE cxx_std_17)

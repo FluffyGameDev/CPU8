@@ -4,7 +4,7 @@
 #include "core/cpu.h"
 #include "core/characterdisplay.h"
 #include "core/memoryunit.h"
-#include "compiler/registerbasedcompiler.h"
+#include "compiler/codegenerator.h"
 
 /*
     char dstAddr = VIDEO_START;
@@ -42,9 +42,12 @@ int main()
     CharacterDisplay display{};
     u8 programSize{};
 
-    std::istringstream ss{ k_Program };
-    RegisterBasedCompiler compiler{};
-    if (compiler.CompileProgram(ss, rom, programSize))
+    Compiler::Lexer lexer{};
+    Compiler::CodeGenerator codeGenerator{};
+    std::vector<Compiler::LexerToken> tokens{};
+
+    if (lexer.BuildTokenSequence(k_Program, tokens) &&
+        codeGenerator.CompileProgram(tokens, rom, programSize))
     {
         while (cpu.InstructionPointer < programSize)
         {
