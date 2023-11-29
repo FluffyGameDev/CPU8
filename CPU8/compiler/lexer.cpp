@@ -144,7 +144,7 @@ namespace FluffyGamevev::CPU8::Compiler
                     return false;
                 }
             }
-            if (outputTokens.empty() || outputTokens.back().Tokentype != LexerTokenType::Label)
+            if (outputTokens.empty() || outputTokens.back().TokenType != LexerTokenType::Label)
             {
                 outputTokens.push_back(LexerToken{ LexerTokenType::OperationEnd });
             }

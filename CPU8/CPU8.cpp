@@ -4,6 +4,7 @@
 #include "core/cpu.h"
 #include "core/characterdisplay.h"
 #include "core/memoryunit.h"
+#include "core/registerbasedcpu.h"
 #include "compiler/codegenerator.h"
 
 /*
@@ -20,16 +21,16 @@ const std::string k_Program
 {
     "CONST CHAR_A 65\n"
     "CONST VIDEO_START 191\n"
-    "MOV A CHAR_A\n"
-    "MOV B VIDEO_START\n"
-    "MOV C VIDEO_START\n"
-    "ADD C 26\n"
+    "MOV A CHAR_A\n" //0xdc 0x41
+    "MOV B VIDEO_START\n" //0xdd 0xbf
+    "MOV C VIDEO_START\n" //0xde 0xbf
+    "ADD C 26\n" //0xb2 0x1a
     "loopStart:\n"
-    "MOV [B] A\n"
-    "INC A\n"
-    "INC B\n"
-    "CMP B C\n"
-    "JG loopStart\n"
+    "MOV [B] A\n" //0x14
+    "INC A\n" //0xd4
+    "INC B\n" //0xd5
+    "CMP B C\n" //0xa6
+    "JL loopStart\n" //0xfd 0x08
 };
 
 int main()
@@ -46,6 +47,7 @@ int main()
     Compiler::CodeGenerator codeGenerator{};
     std::vector<Compiler::LexerToken> tokens{};
 
+    InitCPU(cpu);
     if (lexer.BuildTokenSequence(k_Program, tokens) &&
         codeGenerator.CompileProgram(tokens, rom, programSize))
     {

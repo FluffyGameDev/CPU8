@@ -48,12 +48,15 @@ namespace FluffyGamevev::CPU8::Compiler
         Operator_Jmp,
         Operator_Je,
         Operator_Jg,
-        Operator_Jl
+        Operator_Jl,
+
+        Count,
+        Invalid
     };
 
     struct LexerToken
     {
-        LexerTokenType Tokentype;
+        LexerTokenType TokenType;
         std::string_view Token;
     };
 
