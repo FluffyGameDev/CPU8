@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <unordered_map>
 
 #include "../core/types.h"
 
@@ -54,7 +55,6 @@ namespace FluffyGamevev::CPU8::Compiler
     {
         LexerTokenType Tokentype;
         std::string_view Token;
-        u32 Line;
     };
 
     class Lexer
@@ -63,5 +63,8 @@ namespace FluffyGamevev::CPU8::Compiler
         Lexer();
 
         bool BuildTokenSequence(const std::string& translationUnit, std::vector<LexerToken>& outputTokens) const;
+
+    private:
+        std::unordered_map<std::string, LexerTokenType> m_ReservedSymbols;
     };
 }

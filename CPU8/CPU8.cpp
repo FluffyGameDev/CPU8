@@ -16,7 +16,7 @@
         ++c;
     }
 */
-const char* k_Program
+const std::string k_Program
 {
     "CONST CHAR_A 65\n"
     "CONST VIDEO_START 191\n"
