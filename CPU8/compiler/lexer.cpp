@@ -105,7 +105,7 @@ namespace FluffyGamevev::CPU8::Compiler
                 if (token.back() == ':')
                 {
                     token.remove_suffix(1);
-                    if (Internal::DoesTokenMatchPredicate(token, std::isalpha))
+                    if (Internal::DoesTokenMatchPredicate(token, Internal::IsValidText))
                     {
                         outputTokens.push_back(LexerToken{ LexerTokenType::Label, token });
                     }

@@ -43,15 +43,35 @@ namespace FluffyGamevev::CPU8::Compiler
             return nextToken;
         }
 
-        bool NopHandler(std::unordered_map<std::string, u8>& constants, TokensIterator& currentIt, TokensIterator endIt,
-                        MemoryUnit& rom, u8& programSize)
+        bool NopHandler(std::unordered_map<std::string, u8>& namedAddresses, TokensIterator& currentIt, TokensIterator endIt, MemoryUnit& rom, u8& programSize, u8& datCount)
         {
             PushToProgram(0xf8, rom, programSize);
             return GetNextToken(currentIt, endIt) == LexerTokenType::OperationEnd;
         }
 
-        bool ConstHandler(std::unordered_map<std::string, u8>& constants, TokensIterator& currentIt, TokensIterator endIt,
-            MemoryUnit& rom, u8& programSize)
+        bool ConstHandler(std::unordered_map<std::string, u8>& namedAddresses, TokensIterator& currentIt, TokensIterator endIt, MemoryUnit& rom, u8& programSize, u8& datCount)
+        {
+            if (currentIt != endIt && currentIt->TokenType == LexerTokenType::Text)
+            {
+                std::string token{ currentIt->Token };
+                ++currentIt;
+
+                //TODO: check const name doesn't already exist
+
+                if (currentIt != endIt && currentIt->TokenType == LexerTokenType::Number)
+                {
+                    u8 tokenValue{ (u8)std::atoi(currentIt->Token.data()) };
+                    namedAddresses[token] = tokenValue;
+                    ++currentIt;
+                    return GetNextToken(currentIt, endIt) == LexerTokenType::OperationEnd;
+                }
+            }
+
+            //TODO: error
+            return false;
+        }
+
+        bool DatHandler(std::unordered_map<std::string, u8>& namedAddresses, TokensIterator& currentIt, TokensIterator endIt, MemoryUnit& rom, u8& programSize, u8& datCount)
         {
             if (currentIt != endIt && currentIt->TokenType == LexerTokenType::Text)
             {
@@ -63,8 +83,11 @@ namespace FluffyGamevev::CPU8::Compiler
                 if(currentIt != endIt && currentIt->TokenType == LexerTokenType::Number)
                 {
                     u8 tokenValue{ (u8)std::atoi(currentIt->Token.data()) };
-                    constants[token] = tokenValue;
+                    namedAddresses[token] = datCount;
+                    ++datCount;
                     ++currentIt;
+                    PushToProgram(0xf9, rom, programSize);
+                    PushToProgram(tokenValue, rom, programSize);
                     return GetNextToken(currentIt, endIt) == LexerTokenType::OperationEnd;
                 }
             }
@@ -73,8 +96,7 @@ namespace FluffyGamevev::CPU8::Compiler
             return false;
         }
 
-        bool LabelHandler(std::unordered_map<std::string, u8>& constants, TokensIterator& currentIt, TokensIterator endIt,
-            MemoryUnit& rom, u8& programSize)
+        bool LabelHandler(std::unordered_map<std::string, u8>& namedAddresses, TokensIterator& currentIt, TokensIterator endIt, MemoryUnit& rom, u8& programSize, u8& datCount)
         {
             --currentIt;
             if (currentIt != endIt && currentIt->TokenType == LexerTokenType::Label)
@@ -84,7 +106,7 @@ namespace FluffyGamevev::CPU8::Compiler
 
                 //TODO: check const name doesn't already exist
 
-                constants[token] = programSize;
+                namedAddresses[token] = programSize;
                 return true;
             }
 
@@ -93,8 +115,7 @@ namespace FluffyGamevev::CPU8::Compiler
         }
 
         template<u8 RegisterVariantOpCode, u8 ValueVariantOpCode>
-        bool UnaryOperationHandler(std::unordered_map<std::string, u8>& constants, TokensIterator& currentIt, TokensIterator endIt,
-            MemoryUnit& rom, u8& programSize)
+        bool UnaryOperationHandler(std::unordered_map<std::string, u8>& namedAddresses, TokensIterator& currentIt, TokensIterator endIt, MemoryUnit& rom, u8& programSize, u8& datCount)
         {
             if (currentIt != endIt)
             {
@@ -121,8 +142,8 @@ namespace FluffyGamevev::CPU8::Compiler
                         return false;
                     }
 
-                    auto foundIt{ constants.find(token) };
-                    if (foundIt != constants.end())
+                    auto foundIt{ namedAddresses.find(token) };
+                    if (foundIt != namedAddresses.end())
                     {
                         PushToProgram(ValueVariantOpCode, rom, programSize);
                         PushToProgram(foundIt->second, rom, programSize);
@@ -154,8 +175,7 @@ namespace FluffyGamevev::CPU8::Compiler
         }
 
         template<u8 RegisterVariantOpCode, u8 ValueVariantOpCode>
-        bool BinaryOperationHandler(std::unordered_map<std::string, u8>& constants, TokensIterator& currentIt, TokensIterator endIt,
-            MemoryUnit& rom, u8& programSize)
+        bool BinaryOperationHandler(std::unordered_map<std::string, u8>& namedAddresses, TokensIterator& currentIt, TokensIterator endIt, MemoryUnit& rom, u8& programSize, u8& datCount)
         {
             LexerTokenType lhsTokenType{ GetNextToken(currentIt, endIt) };
             if (currentIt != endIt && IsRegister(lhsTokenType))
@@ -185,8 +205,8 @@ namespace FluffyGamevev::CPU8::Compiler
                         return false;
                     }
 
-                    auto foundIt{ constants.find(rhsToken) };
-                    if (foundIt != constants.end())
+                    auto foundIt{ namedAddresses.find(rhsToken) };
+                    if (foundIt != namedAddresses.end())
                     {
                         u8 lhsCode{ ComputeRegisterCode(lhsTokenType) };
                         u8 opCode{ (u8)(ValueVariantOpCode | lhsCode) };
@@ -221,8 +241,7 @@ namespace FluffyGamevev::CPU8::Compiler
             return false;
         }
 
-        bool MovOperationHandler(std::unordered_map<std::string, u8>& constants, TokensIterator& currentIt, TokensIterator endIt,
-            MemoryUnit& rom, u8& programSize)
+        bool MovOperationHandler(std::unordered_map<std::string, u8>& namedAddresses, TokensIterator& currentIt, TokensIterator endIt, MemoryUnit& rom, u8& programSize, u8& datCount)
         {
             LexerTokenType lhsTokenType{ GetNextToken(currentIt, endIt) };
             bool isLhsRegister{ IsRegister(lhsTokenType) };
@@ -244,8 +263,8 @@ namespace FluffyGamevev::CPU8::Compiler
                 else if (rhsTokenType == LexerTokenType::Text)
                 {
                     u8 baseOpCode{ (u8)(isLhsRegister ? 0xdc : 0xe0) };
-                    auto foundIt{ constants.find(rhsToken) };
-                    if (foundIt != constants.end())
+                    auto foundIt{ namedAddresses.find(rhsToken) };
+                    if (foundIt != namedAddresses.end())
                     {
                         u8 lhsCode{ ComputeRegisterCode(lhsTokenType) };
                         u8 opCode{ (u8)(baseOpCode | lhsCode) };
@@ -283,9 +302,9 @@ namespace FluffyGamevev::CPU8::Compiler
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Nop] = Internal::NopHandler;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Const] = Internal::ConstHandler;
         m_CodeGenerators[(size_t)LexerTokenType::Label] = Internal::LabelHandler;
-        m_CodeGenerators[(size_t)LexerTokenType::Operator_Dat] = Internal::UnaryOperationHandler<0xff, 0xf9>;
+        m_CodeGenerators[(size_t)LexerTokenType::Operator_Dat] = Internal::DatHandler;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Mov] = Internal::MovOperationHandler;
-        m_CodeGenerators[(size_t)LexerTokenType::Operator_Load] = Internal::BinaryOperationHandler<0xec, 0xff>;
+        m_CodeGenerators[(size_t)LexerTokenType::Operator_Load] = Internal::BinaryOperationHandler<0xff, 0xec>;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Push] = Internal::UnaryOperationHandler<0xe4, 0xff>;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Pop] = Internal::UnaryOperationHandler<0xe8, 0xff>;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Cmp] = Internal::BinaryOperationHandler<0xa0, 0xf0>;
@@ -308,7 +327,8 @@ namespace FluffyGamevev::CPU8::Compiler
 
     bool CodeGenerator::CompileProgram(const std::vector<LexerToken>& tokens, MemoryUnit& rom, u8& programSize) const
     {
-        std::unordered_map<std::string, u8> constants{};
+        u8 datCount{};
+        std::unordered_map<std::string, u8> namedAddresses{};
 
         auto currentIt{ tokens.begin() };
         auto endIt{ tokens.end() };
@@ -318,7 +338,7 @@ namespace FluffyGamevev::CPU8::Compiler
             CodeGeneratorHandler generator{ m_CodeGenerators[(size_t)currentTokenType] };
             ++currentIt;
 
-            if (generator == nullptr || !generator(constants, currentIt, endIt, rom, programSize))
+            if (generator == nullptr || !generator(namedAddresses, currentIt, endIt, rom, programSize, datCount))
             {
                 //TODO: error
                 return false;

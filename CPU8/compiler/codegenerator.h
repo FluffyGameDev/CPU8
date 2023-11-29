@@ -13,7 +13,7 @@ namespace FluffyGamevev::CPU8
 namespace FluffyGamevev::CPU8::Compiler
 {
     using TokensIterator = std::vector<LexerToken>::const_iterator;
-    using CodeGeneratorHandler = bool (*)(std::unordered_map<std::string, u8>&, TokensIterator&, TokensIterator, MemoryUnit&, u8&);
+    using CodeGeneratorHandler = bool (*)(std::unordered_map<std::string, u8>&, TokensIterator&, TokensIterator, MemoryUnit&, u8&, u8&);
 
     class CodeGenerator
     {
