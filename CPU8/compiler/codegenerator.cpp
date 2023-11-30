@@ -315,9 +315,9 @@ namespace FluffyGamevev::CPU8::Compiler
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Sub] = Internal::BinaryOperationHandler<0x30, 0xb4>;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Mul] = Internal::BinaryOperationHandler<0x40, 0xb8>;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Div] = Internal::BinaryOperationHandler<0x50, 0xbc>;
-        m_CodeGenerators[(size_t)LexerTokenType::Operator_Mod] = Internal::BinaryOperationHandler<0x60, 0xcc>;
-        m_CodeGenerators[(size_t)LexerTokenType::Operator_And] = Internal::BinaryOperationHandler<0x70, 0xcc>;
-        m_CodeGenerators[(size_t)LexerTokenType::Operator_Or] = Internal::BinaryOperationHandler<0x80, 0xcc>;
+        m_CodeGenerators[(size_t)LexerTokenType::Operator_Mod] = Internal::BinaryOperationHandler<0x60, 0xc0>;
+        m_CodeGenerators[(size_t)LexerTokenType::Operator_And] = Internal::BinaryOperationHandler<0x70, 0xc4>;
+        m_CodeGenerators[(size_t)LexerTokenType::Operator_Or] = Internal::BinaryOperationHandler<0x80, 0xc8>;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Xor] = Internal::BinaryOperationHandler<0x90, 0xcc>;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Jmp] = Internal::UnaryOperationHandler<0xff, 0xfa>;
         m_CodeGenerators[(size_t)LexerTokenType::Operator_Je] = Internal::UnaryOperationHandler<0xff, 0xfb>;
